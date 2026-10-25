@@ -381,12 +381,47 @@ pages.booking = () => {
   updatePaymentMethod();
   update();
 
-  // Open the selected UPI app with the booking amount prefilled.
-  // Configure the real merchant UPI ID in the form before using this feature.
+  const MERCHANT_UPI = "rajgautiupi@xyz";
+  const MERCHANT_NAME = "RideEasy";
+  const buildUpiParams = amount => {
+    const p = { pa: MERCHANT_UPI, pn: MERCHANT_NAME, cu: "INR", tn: "RideEasy vehicle rental" };
+    if (amount > 0) p.am = amount.toFixed(2);
+    return new URLSearchParams(p);
+  };
+
+  // QR code (shown to desktop/PC users) — regenerated whenever the amount changes.
+  const qrHost = document.getElementById("upiQr");
+  const renderUpiQr = () => {
+    if (!qrHost || !window.QRCode) return;
+    const v = VEHICLES.find(x => x.id === +vehicleSelect.value);
+    const days = daysBetween();
+    const amount = v && days ? days * v.price : 0;
+    const qr = new window.QRCode(-1, 0);
+    qr.addData("upi://pay?" + buildUpiParams(amount).toString());
+    qr.make();
+    const n = qr.getModuleCount(), size = 4;
+    let rects = "";
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) rects += `<rect x="${c + size}" y="${r + size}" width="1" height="1"/>`;
+    const dim = n + size * 2;
+    qrHost.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${dim} ${dim}" shape-rendering="crispEdges" role="img"><rect width="${dim}" height="${dim}" fill="#fff"/><g fill="#000">${rects}</g></svg>`;
+    const hint = document.getElementById("upiQrHint");
+    if (hint) hint.textContent = amount
+      ? `Scan with any UPI app to pay ₹${amount} to ${MERCHANT_UPI}.`
+      : "Scan with any UPI app (Google Pay, PhonePe, Paytm). Select a vehicle and dates to include the amount.";
+  };
+  [vehicleSelect, pickup, ret].forEach(el => el.addEventListener("change", renderUpiQr));
+  renderUpiQr();
+
+  const copyBtn = document.getElementById("copyUpiBtn");
+  if (copyBtn) copyBtn.addEventListener("click", () => {
+    const done = () => { copyBtn.textContent = "Copied!"; setTimeout(() => copyBtn.textContent = "Copy", 1500); };
+    if (navigator.clipboard) navigator.clipboard.writeText(MERCHANT_UPI).then(done, done); else done();
+  });
+
+  // Open the selected UPI app with the booking amount prefilled (mobile).
   document.querySelectorAll("[data-upi-app]").forEach(button => {
     button.addEventListener("click", () => {
-      const merchantUpi = "rajgauripandarkar@okaxis";
-      const vehicle = VEHICLES.find(x => x.id === +vehicleSelect.value);
+            const vehicle = VEHICLES.find(x => x.id === +vehicleSelect.value);
       const amount = vehicle ? daysBetween() * vehicle.price : 0;
       if (!paymentRadios.find(el => el.checked && el.value === "UPI")) {
         showFlash("Select UPI as your payment method first.", "error");
@@ -397,13 +432,7 @@ pages.booking = () => {
         showFlash("Select a vehicle and valid rental dates to calculate the amount.", "error");
         return;
       }
-      const params = new URLSearchParams({
-        pa: merchantUpi,
-        pn: "RideEasy",
-        am: amount.toFixed(2),
-        cu: "INR",
-        tn: "RideEasy vehicle rental"
-      });
+      const params = buildUpiParams(amount);
       const upiUrl = "upi://pay?" + params.toString();
       const app = button.dataset.upiApp;
       const androidPackages = {
