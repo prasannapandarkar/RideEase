@@ -777,11 +777,7 @@ img { max-width: 100%; display: block; }
 .upi-id-row strong { color:var(--asphalt); word-break:break-all; }
 .upi-copy-btn { border:1px solid var(--teal); background:#fff; color:var(--teal); border-radius:8px; padding:6px 12px; font:inherit; font-size:.82rem; font-weight:700; cursor:pointer; }
 .upi-copy-btn:hover { background:#f0fbf8; }
-.upi-qr-box { display:none; margin-top:16px; text-align:center; }
+.upi-qr-box { display:block; margin-top:16px; text-align:center; }
 .upi-qr-canvas { width:210px; height:210px; margin:0 auto; padding:6px; background:#fff; border:1px solid var(--border-soft); border-radius:var(--radius-md); }
 .upi-qr-canvas svg { width:100%; height:100%; display:block; }
 .upi-qr-box p { margin:10px auto 0; max-width:320px; font-size:.82rem; color:var(--text-muted); }
-@media (hover:hover) and (pointer:fine) and (min-width:768px) {
-  .upi-qr-box { display:block; }
-  .upi-apps { display:none; }
-}
