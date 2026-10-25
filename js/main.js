@@ -392,11 +392,7 @@ pages.booking = () => {
         showFlash("Select UPI as your payment method first.", "error");
         return;
       }
-      if (!/^[\w.\-]{2,256}@[\w.\-]{2,64}$/.test(merchantUpi)) {
-        showFlash("Enter your business's valid merchant UPI ID first.", "error");
-        document.getElementById("upiId").focus();
-        return;
-      }
+      
       if (!amount || !pickup.value || !ret.value || ret.value < pickup.value) {
         showFlash("Select a vehicle and valid rental dates to calculate the amount.", "error");
         return;
