@@ -3,89 +3,151 @@
 // ---------------------------------------------------------------------------
 // DATA
 // ---------------------------------------------------------------------------
-const VEHICLES = [
-  { id: 1, name: "Honda Activa 6G", type: "Bike", price: 250, icon: "🛵", available: true,
-    desc: "Fuel-efficient scooter, perfect for city rides. Automatic gear, comfy seat." },
-  { id: 2, name: "Royal Enfield Classic 350", type: "Bike", price: 650, icon: "🏍️", available: true,
-    desc: "Iconic cruiser bike with a thumping engine sound. Great for highway trips." },
-  { id: 3, name: "TVS Jupiter", type: "Bike", price: 200, icon: "🛵", available: false,
-    desc: "Lightweight and easy to ride scooter, ideal for daily commuting." },
-  { id: 4, name: "KTM Duke 200", type: "Bike", price: 800, icon: "🏍️", available: true,
-    desc: "Sporty naked bike for riders who love speed and style." },
-  { id: 5, name: "Maruti Suzuki Swift", type: "Car", price: 1200, icon: "🚗", available: true,
-    desc: "Compact hatchback with great mileage, ideal for city driving." },
-  { id: 6, name: "Maruti Suzuki Baleno", type: "Car", price: 1400, icon: "🚗", available: true,
-    desc: "Spacious premium hatchback with modern features and AC comfort." },
-  { id: 7, name: "Hyundai Creta", type: "Car", price: 2200, icon: "🚙", available: false,
-    desc: "SUV with a commanding driving position, perfect for family trips." },
-  { id: 8, name: "Toyota Innova Crysta", type: "Car", price: 2800, icon: "🚐", available: true,
-    desc: "Spacious 7-seater MPV, great for long family or group journeys." },
+const VEHICLES = [{
+        id: 1,
+        name: "Honda Activa 6G",
+        type: "Bike",
+        price: 250,
+        icon: "🛵",
+        available: true,
+        desc: "Fuel-efficient scooter, perfect for city rides. Automatic gear, comfy seat."
+    },
+    {
+        id: 2,
+        name: "Royal Enfield Classic 350",
+        type: "Bike",
+        price: 650,
+        icon: "🏍️",
+        available: true,
+        desc: "Iconic cruiser bike with a thumping engine sound. Great for highway trips."
+    },
+    {
+        id: 3,
+        name: "TVS Jupiter",
+        type: "Bike",
+        price: 200,
+        icon: "🛵",
+        available: false,
+        desc: "Lightweight and easy to ride scooter, ideal for daily commuting."
+    },
+    {
+        id: 4,
+        name: "KTM Duke 200",
+        type: "Bike",
+        price: 800,
+        icon: "🏍️",
+        available: true,
+        desc: "Sporty naked bike for riders who love speed and style."
+    },
+    {
+        id: 5,
+        name: "Maruti Suzuki Swift",
+        type: "Car",
+        price: 1200,
+        icon: "🚗",
+        available: true,
+        desc: "Compact hatchback with great mileage, ideal for city driving."
+    },
+    {
+        id: 6,
+        name: "Maruti Suzuki Baleno",
+        type: "Car",
+        price: 1400,
+        icon: "🚗",
+        available: true,
+        desc: "Spacious premium hatchback with modern features and AC comfort."
+    },
+    {
+        id: 7,
+        name: "Hyundai Creta",
+        type: "Car",
+        price: 2200,
+        icon: "🚙",
+        available: false,
+        desc: "SUV with a commanding driving position, perfect for family trips."
+    },
+    {
+        id: 8,
+        name: "Toyota Innova Crysta",
+        type: "Car",
+        price: 2800,
+        icon: "🚐",
+        available: true,
+        desc: "Spacious 7-seater MPV, great for long family or group journeys."
+    },
 ];
 
 // ---------------------------------------------------------------------------
 // STORAGE HELPERS (localStorage wrapped in try/catch)
 // ---------------------------------------------------------------------------
 function load(key, fallback) {
-  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; }
-  catch (e) { return fallback; }
+    try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
 }
+
 function save(key, value) {
-  try { localStorage.setItem(key, JSON.stringify(value)); return true; }
-  catch (e) { return false; }
+    try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch (e) { return false; }
 }
 
 // ---------------------------------------------------------------------------
 // AUTH
 // ---------------------------------------------------------------------------
 async function hashPassword(pw) {
-  try {
-    if (window.crypto && crypto.subtle) {
-      const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("rideeasy:" + pw));
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
-    }
-  } catch (e) { /* fall through */ }
-  let h = 5381;                       // simple fallback if SubtleCrypto is unavailable
-  for (const c of "rideeasy:" + pw) h = ((h << 5) + h + c.charCodeAt(0)) >>> 0;
-  return "f" + h.toString(16);
+    try {
+        if (window.crypto && crypto.subtle) {
+            const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("rideeasy:" + pw));
+            return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+        }
+    } catch (e) { /* fall through */ }
+    let h = 5381; // simple fallback if SubtleCrypto is unavailable
+    for (const c of "rideeasy:" + pw) h = ((h << 5) + h + c.charCodeAt(0)) >>> 0;
+    return "f" + h.toString(16);
 }
 const getUsers = () => load("re_users", []);
+
 function currentUser() {
-  const email = load("re_session", null);
-  return getUsers().find(u => u.email === email) || null;
+    const email = load("re_session", null);
+    return getUsers().find(u => u.email === email) || null;
 }
+
 function logout() {
-  try { localStorage.removeItem("re_session"); } catch (e) {}
-  flashNext("You have been logged out.", "success");
-  location.href = "index.html";
+    try { localStorage.removeItem("re_session"); } catch (e) {}
+    flashNext("You have been logged out.", "success");
+    location.href = "index.html";
 }
 // Pages that need login call this first. Returns the user, or redirects.
 function requireLogin() {
-  const u = currentUser();
-  if (!u) {
-    flashNext("Please log in to continue.", "error");
-    const here = location.pathname.split("/").pop() || "index.html";
-    location.href = "login.html?next=" + encodeURIComponent(here + location.search);
-  }
-  return u;
+    const u = currentUser();
+    if (!u) {
+        flashNext("Please log in to continue.", "error");
+        const here = location.pathname.split("/").pop() || "index.html";
+        location.href = "login.html?next=" + encodeURIComponent(here + location.search);
+    }
+    return u;
 }
+
 function safeNext(n) {
-  return n && /^[A-Za-z0-9_\-]+\.html(\?[A-Za-z0-9_=&\-]*)?$/.test(n) ? n : "index.html";
+    return n && /^[A-Za-z0-9_\-]+\.html(\?[A-Za-z0-9_=&\-]*)?$/.test(n) ? n : "index.html";
 }
 
 // Flash messages that survive one page navigation
 function flashNext(msg, cat) { try { sessionStorage.setItem("re_flash", JSON.stringify({ msg, cat })); } catch (e) {} }
+
 function showFlash(msg, cat) {
-  let wrap = document.querySelector(".flash-wrap");
-  if (!wrap) {
-    wrap = document.createElement("div");
-    wrap.className = "flash-wrap";
-    document.querySelector("main").before(wrap);
-  }
-  const el = document.createElement("div");
-  el.className = "flash flash-" + cat;
-  el.textContent = msg;
-  wrap.appendChild(el);
-  setTimeout(() => { el.style.transition = "opacity .4s"; el.style.opacity = "0"; setTimeout(() => el.remove(), 400); }, 4000);
+    let wrap = document.querySelector(".flash-wrap");
+    if (!wrap) {
+        wrap = document.createElement("div");
+        wrap.className = "flash-wrap";
+        document.querySelector("main").before(wrap);
+    }
+    const el = document.createElement("div");
+    el.className = "flash flash-" + cat;
+    el.textContent = msg;
+    wrap.appendChild(el);
+    setTimeout(() => {
+        el.style.transition = "opacity .4s";
+        el.style.opacity = "0";
+        setTimeout(() => el.remove(), 400);
+    }, 4000);
 }
 
 // ---------------------------------------------------------------------------
@@ -94,16 +156,16 @@ function showFlash(msg, cat) {
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 
 function renderLayout() {
-  const page = document.body.dataset.page;
-  const user = currentUser();
-  const a = (href, label, key, cls = "") =>
-    `<a href="${href}" class="${cls} ${page === key ? "active" : ""}">${label}</a>`;
+    const page = document.body.dataset.page;
+    const user = currentUser();
+    const a = (href, label, key, cls = "") =>
+        `<a href="${href}" class="${cls} ${page === key ? "active" : ""}">${label}</a>`;
 
-  const authLinks = user
-    ? `<span class="nav-user">Hi, ${esc(user.name.split(" ")[0])}</span><a href="#" id="logoutLink">Logout</a>`
-    : `${a("login.html", "Login", "login")}<a href="login.html?tab=register" class="nav-signup">Sign Up</a>`;
+    const authLinks = user ?
+        `<span class="nav-user">Hi, ${esc(user.name.split(" ")[0])}</span><a href="#" id="logoutLink">Logout</a>` :
+        `${a("login.html", "Login", "login")}<a href="login.html?tab=register" class="nav-signup">Sign Up</a>`;
 
-  document.body.insertAdjacentHTML("afterbegin", `
+    document.body.insertAdjacentHTML("afterbegin", `
 <header class="site-header">
   <div class="nav-wrap">
     <a href="index.html" class="logo"><span class="logo-mark">R</span><span class="logo-text">RideEasy</span></a>
@@ -120,7 +182,7 @@ function renderLayout() {
   <div class="road-line" aria-hidden="true"></div>
 </header>`);
 
-  document.querySelector("main").insertAdjacentHTML("afterend", `
+    document.querySelector("main").insertAdjacentHTML("afterend", `
 <footer class="site-footer">
   <div class="footer-wrap">
     <div class="footer-brand">
@@ -140,26 +202,33 @@ function renderLayout() {
   <div class="footer-bottom">© 2026 RideEasy Demo Project. All sample data is fictional.</div>
 </footer>`);
 
-  const lo = document.getElementById("logoutLink");
-  if (lo) lo.addEventListener("click", e => { e.preventDefault(); logout(); });
-  const t = document.getElementById("navToggle"), n = document.getElementById("mainNav");
-  t.addEventListener("click", () => n.classList.toggle("open"));
+    const lo = document.getElementById("logoutLink");
+    if (lo) lo.addEventListener("click", e => {
+        e.preventDefault();
+        logout();
+    });
+    const t = document.getElementById("navToggle"),
+        n = document.getElementById("mainNav");
+    t.addEventListener("click", () => n.classList.toggle("open"));
 
-  try {
-    const f = JSON.parse(sessionStorage.getItem("re_flash") || "null");
-    if (f) { sessionStorage.removeItem("re_flash"); showFlash(f.msg, f.cat); }
-  } catch (e) {}
+    try {
+        const f = JSON.parse(sessionStorage.getItem("re_flash") || "null");
+        if (f) {
+            sessionStorage.removeItem("re_flash");
+            showFlash(f.msg, f.cat);
+        }
+    } catch (e) {}
 }
 
 // ---------------------------------------------------------------------------
 // VEHICLE CARD
 // ---------------------------------------------------------------------------
 function vehicleCard(v, withDetails) {
-  const badge = v.available ? "badge-available" : "badge-unavailable";
-  const book = v.available
-    ? `<a href="booking.html?vehicle=${v.id}" class="btn btn-small btn-primary">Book Now</a>`
-    : `<button class="btn btn-small btn-disabled" disabled>Unavailable</button>`;
-  return `
+    const badge = v.available ? "badge-available" : "badge-unavailable";
+    const book = v.available ?
+        `<a href="booking.html?vehicle=${v.id}" class="btn btn-small btn-primary">Book Now</a>` :
+        `<button class="btn btn-small btn-disabled" disabled>Unavailable</button>`;
+    return `
 <div class="vehicle-card" data-type="${v.type}">
   <div class="vehicle-image"><span class="vehicle-emoji">${v.icon}</span>
     <span class="badge ${badge}">${v.available ? "Available" : "Unavailable"}</span></div>
@@ -316,7 +385,7 @@ pages.booking = () => {
   // Configure the real merchant UPI ID in the form before using this feature.
   document.querySelectorAll("[data-upi-app]").forEach(button => {
     button.addEventListener("click", () => {
-      const merchantUpi = document.getElementById("upiId").value.trim();
+      const merchantUpi = "rajgauripandarkar@okaxis";
       const vehicle = VEHICLES.find(x => x.id === +vehicleSelect.value);
       const amount = vehicle ? daysBetween() * vehicle.price : 0;
       if (!paymentRadios.find(el => el.checked && el.value === "UPI")) {
