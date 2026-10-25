@@ -381,7 +381,7 @@ pages.booking = () => {
   updatePaymentMethod();
   update();
 
-  const MERCHANT_UPI = "rajgauripandarkar@okaxis";
+  const MERCHANT_UPI = "rajgauri@xyz";
   const MERCHANT_NAME = "RideEasy";
   const buildUpiParams = amount => {
     const p = { pa: MERCHANT_UPI, pn: MERCHANT_NAME, cu: "INR", tn: "RideEasy vehicle rental" };
