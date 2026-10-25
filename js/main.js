@@ -312,6 +312,50 @@ pages.booking = () => {
   updatePaymentMethod();
   update();
 
+  // Open the selected UPI app with the booking amount prefilled.
+  // Configure the real merchant UPI ID in the form before using this feature.
+  document.querySelectorAll("[data-upi-app]").forEach(button => {
+    button.addEventListener("click", () => {
+      const merchantUpi = document.getElementById("upiId").value.trim();
+      const vehicle = VEHICLES.find(x => x.id === +vehicleSelect.value);
+      const amount = vehicle ? daysBetween() * vehicle.price : 0;
+      if (!paymentRadios.find(el => el.checked && el.value === "UPI")) {
+        showFlash("Select UPI as your payment method first.", "error");
+        return;
+      }
+      if (!/^[\w.\-]{2,256}@[\w.\-]{2,64}$/.test(merchantUpi)) {
+        showFlash("Enter your business's valid merchant UPI ID first.", "error");
+        document.getElementById("upiId").focus();
+        return;
+      }
+      if (!amount || !pickup.value || !ret.value || ret.value < pickup.value) {
+        showFlash("Select a vehicle and valid rental dates to calculate the amount.", "error");
+        return;
+      }
+      const params = new URLSearchParams({
+        pa: merchantUpi,
+        pn: "RideEasy",
+        am: amount.toFixed(2),
+        cu: "INR",
+        tn: "RideEasy vehicle rental"
+      });
+      const upiUrl = "upi://pay?" + params.toString();
+      const app = button.dataset.upiApp;
+      const androidPackages = {
+        gpay: "com.google.android.apps.nbu.paisa.user",
+        phonepe: "com.phonepe.app",
+        paytm: "net.one97.paytm"
+      };
+      // Android intent opens the chosen app; generic UPI URI lets the device choose an app.
+      if (app !== "upi" && androidPackages[app]) {
+        const query = params.toString();
+        window.location.href = "intent://pay?" + query + "#Intent;scheme=upi;package=" + androidPackages[app] + ";end";
+      } else {
+        window.location.href = upiUrl;
+      }
+    });
+  });
+
   mobile.addEventListener("input", () => {
     mobile.value = mobile.value.replace(/\D/g, "").slice(0, 10);
     const ok = mobile.value.length === 10;

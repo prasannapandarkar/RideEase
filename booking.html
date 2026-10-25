@@ -64,9 +64,15 @@
         <label class="payment-option"><input type="radio" name="paymentMethod" value="Pay on pickup"><span class="payment-icon">₹</span><span><strong>Pay on pickup</strong><small>Pay when you collect the vehicle</small></span></label>
       </div>
       <div class="payment-detail" id="upiDetails">
-        <label for="upiId">UPI ID <span>(demo only)</span></label>
-        <input type="text" id="upiId" placeholder="name@bank (optional)" autocomplete="off">
-        <small>No payment will be initiated. A real UPI gateway must be connected for live payments.</small>
+        <label for="upiId">RideEasy merchant UPI ID</label>
+        <input type="text" id="upiId" placeholder="yourbusiness@upi" autocomplete="off">
+        <small>Enter your business's real UPI ID, then tap a payment app. This opens the app; the website cannot verify payment.</small>
+        <div class="upi-apps" aria-label="Open a payment app">
+          <button type="button" class="upi-app-btn" data-upi-app="gpay"><span class="upi-app-mark gpay-mark">G</span><span>Google Pay</span></button>
+          <button type="button" class="upi-app-btn" data-upi-app="phonepe"><span class="upi-app-mark phonepe-mark">पे</span><span>PhonePe</span></button>
+          <button type="button" class="upi-app-btn" data-upi-app="paytm"><span class="upi-app-mark paytm-mark">P</span><span>Paytm</span></button>
+          <button type="button" class="upi-app-btn" data-upi-app="upi"><span class="upi-app-mark other-upi-mark">↗</span><span>Other UPI app</span></button>
+        </div>
       </div>
       <div class="payment-detail hidden" id="cardDetails">
         <div class="card-preview"><span>RIDEEASY</span><strong>•••• &nbsp; •••• &nbsp; •••• &nbsp; ••••</strong><small>Card payment interface preview</small></div>

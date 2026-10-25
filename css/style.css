@@ -758,3 +758,15 @@ img { max-width: 100%; display: block; }
 .payment-total strong { font-family:var(--font-display); color:var(--asphalt); font-size:1.35rem; }
 .payment-disclaimer { color:var(--text-muted); font-size:.78rem; line-height:1.5; margin:10px 0 16px; }
 @media (max-width:520px) { .payment-panel { padding:17px; } .payment-heading { align-items:flex-start; flex-direction:column; } }
+
+
+/* UPI app launch buttons */
+.upi-apps { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:14px; }
+.upi-app-btn { display:flex; align-items:center; justify-content:flex-start; gap:10px; padding:11px 12px; border:1px solid var(--border-soft); border-radius:var(--radius-md); background:#fff; color:var(--asphalt); font:inherit; font-size:.88rem; font-weight:650; cursor:pointer; transition:border-color .2s, transform .2s, background .2s; }
+.upi-app-btn:hover { border-color:var(--teal); background:#f0fbf8; transform:translateY(-1px); }
+.upi-app-mark { display:grid; place-items:center; width:32px; height:32px; flex-shrink:0; border-radius:9px; font-weight:800; }
+.gpay-mark { color:#4285f4; background:#eef4ff; }
+.phonepe-mark { color:#5f259f; background:#f3eaff; }
+.paytm-mark { color:#0879b9; background:#e9f7ff; }
+.other-upi-mark { color:var(--teal); background:#e9f8f4; }
+@media (max-width:420px) { .upi-apps { grid-template-columns:1fr; } }
