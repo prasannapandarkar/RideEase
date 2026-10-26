@@ -5,6 +5,7 @@
 // ---------------------------------------------------------------------------
 const VEHICLES = [{
         id: 1,
+        image: "Honda_Activa_6G.jpg",
         name: "Honda Activa 6G",
         type: "Bike",
         price: 250,
@@ -14,6 +15,7 @@ const VEHICLES = [{
     },
     {
         id: 2,
+        image: "Royal_Enfield_Classic_350_(2017_Model_Year).jpg",
         name: "Royal Enfield Classic 350",
         type: "Bike",
         price: 650,
@@ -23,6 +25,7 @@ const VEHICLES = [{
     },
     {
         id: 3,
+        image: "TVS_Jupiter.jpg",
         name: "TVS Jupiter",
         type: "Bike",
         price: 200,
@@ -32,6 +35,7 @@ const VEHICLES = [{
     },
     {
         id: 4,
+        image: "KTM_DUKE_200.jpg",
         name: "KTM Duke 200",
         type: "Bike",
         price: 800,
@@ -41,6 +45,7 @@ const VEHICLES = [{
     },
     {
         id: 5,
+        image: "Maruti_Suzuki_Swift_LXi.jpg",
         name: "Maruti Suzuki Swift",
         type: "Car",
         price: 1200,
@@ -50,6 +55,7 @@ const VEHICLES = [{
     },
     {
         id: 6,
+        image: "2022_Maruti_Suzuki_Baleno_Alpha_(India)_front_view.jpg",
         name: "Maruti Suzuki Baleno",
         type: "Car",
         price: 1400,
@@ -59,6 +65,7 @@ const VEHICLES = [{
     },
     {
         id: 7,
+        image: "2021_Hyundai_Creta_SX(O)_CRDi_(India)_front_view.jpg",
         name: "Hyundai Creta",
         type: "Car",
         price: 2200,
@@ -68,6 +75,7 @@ const VEHICLES = [{
     },
     {
         id: 8,
+        image: "Toyota_Innova_Crysta.jpg",
         name: "Toyota Innova Crysta",
         type: "Car",
         price: 2800,
@@ -76,6 +84,12 @@ const VEHICLES = [{
         desc: "Spacious 7-seater MPV, great for long family or group journeys."
     },
 ];
+
+// Real vehicle photos from Wikimedia Commons (emoji icon is the fallback if one fails to load).
+const vehicleImgUrl = (v, w) => "https://commons.wikimedia.org/wiki/Special:FilePath/" + encodeURIComponent(v.image) + "?width=" + (w || 640);
+function vehiclePhoto(v, w) {
+    return `<img class="vehicle-photo" src="${vehicleImgUrl(v, w)}" alt="${esc(v.name)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'vehicle-emoji',textContent:'${v.icon}'}))">`;
+}
 
 // ---------------------------------------------------------------------------
 // STORAGE HELPERS (localStorage wrapped in try/catch)
@@ -230,7 +244,7 @@ function vehicleCard(v, withDetails) {
         `<button class="btn btn-small btn-disabled" disabled>Unavailable</button>`;
     return `
 <div class="vehicle-card" data-type="${v.type}">
-  <div class="vehicle-image"><span class="vehicle-emoji">${v.icon}</span>
+  <div class="vehicle-image">${vehiclePhoto(v)}
     <span class="badge ${badge}">${v.available ? "Available" : "Unavailable"}</span></div>
   <div class="vehicle-info">
     <span class="vehicle-type">${v.type}</span>
@@ -272,7 +286,7 @@ pages.vehicles = () => {
     const b = e.target.closest(".js-view-details");
     if (!b) return;
     const v = VEHICLES.find(x => x.id === +b.dataset.id);
-    document.getElementById("modalIcon").textContent = v.icon;
+    document.getElementById("modalIcon").innerHTML = vehiclePhoto(v, 800);
     document.getElementById("modalType").textContent = v.type;
     document.getElementById("modalName").textContent = v.name;
     document.getElementById("modalDesc").textContent = v.desc;
@@ -324,6 +338,7 @@ pages.login = () => {
     if (pw !== confirm) errors.push("Passwords do not match.");
     const users = getUsers();
     if (users.some(u => u.email === email)) errors.push("An account with this email already exists. Please log in.");
+    if (paymentRadios.find(el => el.checked)?.value === "UPI" && !validUpi()) errors.push("Enter a valid UPI ID (e.g. name@bank).");
     if (errors.length) return errors.forEach(m => showFlash(m, "error"));
     users.push({ name, email, mobile, passwordHash: await hashPassword(pw) });
     save("re_users", users);
@@ -381,10 +396,15 @@ pages.booking = () => {
   updatePaymentMethod();
   update();
 
-  const MERCHANT_UPI = "rajgauri@xyz";
+  // No fixed UPI ID: the user types it in every time.
+  const upiInput = document.getElementById("upiIdInput");
+  const upiError = document.getElementById("upiIdError");
+  const UPI_RE = /^[A-Za-z0-9.\-_]{2,256}@[A-Za-z]{2,64}$/;
+  const getUpiId = () => upiInput ? upiInput.value.trim() : "";
+  const validUpi = () => UPI_RE.test(getUpiId());
   const MERCHANT_NAME = "RideEasy";
   const buildUpiParams = amount => {
-    const p = { pa: MERCHANT_UPI, pn: MERCHANT_NAME, cu: "INR", tn: "RideEasy vehicle rental" };
+    const p = { pa: getUpiId(), pn: MERCHANT_NAME, cu: "INR", tn: "RideEasy vehicle rental" };
     if (amount > 0) p.am = amount.toFixed(2);
     return new URLSearchParams(p);
   };
@@ -393,6 +413,14 @@ pages.booking = () => {
   const qrHost = document.getElementById("upiQr");
   const renderUpiQr = () => {
     if (!qrHost || !window.QRCode) return;
+    const hint = document.getElementById("upiQrHint");
+    if (!validUpi()) {
+      qrHost.innerHTML = "";
+      qrHost.classList.add("hidden");
+      if (hint) hint.textContent = "Enter a valid UPI ID above (e.g. name@bank) to generate the payment QR code.";
+      return;
+    }
+    qrHost.classList.remove("hidden");
     const v = VEHICLES.find(x => x.id === +vehicleSelect.value);
     const days = daysBetween();
     const amount = v && days ? days * v.price : 0;
@@ -404,18 +432,22 @@ pages.booking = () => {
     for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) rects += `<rect x="${c + size}" y="${r + size}" width="1" height="1"/>`;
     const dim = n + size * 2;
     qrHost.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${dim} ${dim}" shape-rendering="crispEdges" role="img"><rect width="${dim}" height="${dim}" fill="#fff"/><g fill="#000">${rects}</g></svg>`;
-    const hint = document.getElementById("upiQrHint");
     if (hint) hint.textContent = amount
-      ? `Scan with any UPI app to pay ₹${amount} to ${MERCHANT_UPI}.`
+      ? `Scan with any UPI app to pay ₹${amount} to ${getUpiId()}.`
       : "Scan with any UPI app (Google Pay, PhonePe, Paytm). Select a vehicle and dates to include the amount.";
   };
   [vehicleSelect, pickup, ret].forEach(el => el.addEventListener("change", renderUpiQr));
+  if (upiInput) upiInput.addEventListener("input", () => {
+    upiError.textContent = (getUpiId() && !validUpi()) ? "Enter a valid UPI ID like name@bank" : "";
+    renderUpiQr();
+  });
   renderUpiQr();
 
   const copyBtn = document.getElementById("copyUpiBtn");
   if (copyBtn) copyBtn.addEventListener("click", () => {
+    if (!validUpi()) { showFlash("Enter a valid UPI ID first.", "error"); return; }
     const done = () => { copyBtn.textContent = "Copied!"; setTimeout(() => copyBtn.textContent = "Copy", 1500); };
-    if (navigator.clipboard) navigator.clipboard.writeText(MERCHANT_UPI).then(done, done); else done();
+    if (navigator.clipboard) navigator.clipboard.writeText(getUpiId()).then(done, done); else done();
   });
 
   // Open the selected UPI app with the booking amount prefilled (mobile).
@@ -427,7 +459,10 @@ pages.booking = () => {
         showFlash("Select UPI as your payment method first.", "error");
         return;
       }
-      
+      if (!validUpi()) {
+        showFlash("Enter a valid UPI ID (e.g. name@bank) first.", "error");
+        return;
+      }
       if (!amount || !pickup.value || !ret.value || ret.value < pickup.value) {
         showFlash("Select a vehicle and valid rental dates to calculate the amount.", "error");
         return;
@@ -469,6 +504,7 @@ pages.booking = () => {
     if (!pickup.value || !ret.value) errors.push("Pickup and return dates are required.");
     else if (ret.value < pickup.value) errors.push("Return date cannot be before pickup date.");
     if (!location_) errors.push("Pickup location is required.");
+    if (paymentRadios.find(el => el.checked)?.value === "UPI" && !validUpi()) errors.push("Enter a valid UPI ID (e.g. name@bank).");
     if (errors.length) return errors.forEach(m => showFlash(m, "error"));
 
     const bookings = load("re_bookings", []);
@@ -557,7 +593,7 @@ pages.admin = () => {
     document.getElementById("pendingDocs").textContent = pendingDocs;
 
     document.getElementById("vehicleRows").innerHTML = VEHICLES.map(v => `
-      <tr><td>${v.icon}</td><td>${esc(v.name)}</td><td>${v.type}</td><td>₹${v.price}</td>
+      <tr><td><img class="vehicle-thumb" src="${vehicleImgUrl(v, 120)}" alt="" loading="lazy"></td><td>${esc(v.name)}</td><td>${v.type}</td><td>₹${v.price}</td>
       <td><span class="status-tag ${v.available ? "status-confirmed" : "status-unavailable"}">${v.available ? "Available" : "Unavailable"}</span></td></tr>`).join("");
 
     document.getElementById("bookingRows").innerHTML = bookings.length ? bookings.map(b => `
